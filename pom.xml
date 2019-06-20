@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.1.6.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>maersk.com.iib.monitoring</groupId>
+	<artifactId>iib-monitoring</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>iib-monitoring</name>
+	<description>IIB Monitoring</description>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<java.jetty>C:/Program Files/IBM/IIB/10.0.0.11/common/jetty/lib</java.jetty>
+		<java.iibAPI>C:/Program Files/IBM/IIB/10.0.0.11/common/classes</java.iibAPI>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+		
+		<dependency>
+		  <groupId>integratonAPI</groupId>
+		  <artifactId>com.ibm.broker</artifactId>
+		  <version>1.0.0</version>
+		  <scope>system</scope>
+		  <systemPath>
+		    ${java.iibAPI}/IntegrationAPI.jar
+		  </systemPath>
+		</dependency>
+		
+		<dependency>
+		  <groupId>jettyCLIENT</groupId>
+		  <artifactId>org.eclipse.jetty.client</artifactId>
+		  <version>1.0.0</version>
+		  <scope>system</scope>
+		  <systemPath>
+		    ${java.jetty}/jetty-client.jar
+		  </systemPath>
+		</dependency>	
+
+		<dependency>
+		  <groupId>jettyIO</groupId>
+		  <artifactId>org.eclipse.jetty.io</artifactId>
+		  <version>1.0.0</version>
+		  <scope>system</scope>
+		  <systemPath>
+		    ${java.jetty}/jetty-io.jar
+		  </systemPath>
+		</dependency>	
+
+		<dependency>
+		  <groupId>jettyUTIL</groupId>
+		  <artifactId>org.eclipse.jetty.util</artifactId>
+		  <version>1.0.0</version>
+		  <scope>system</scope>
+		  <systemPath>
+		    ${java.jetty}/jetty-util.jar
+		  </systemPath>
+		</dependency>	
+	
+		<dependency>
+		  <groupId>jettyHTTP</groupId>
+		  <artifactId>org.eclipse.jetty.http</artifactId>
+		  <version>1.0.0</version>
+		  <scope>system</scope>
+		  <systemPath>
+		    ${java.jetty}/jetty-http.jar
+		  </systemPath>
+		</dependency>	
+
+		<dependency>
+		  <groupId>websocketAPI</groupId>
+		  <artifactId>org.eclipse.jetty.websocket.api</artifactId>
+		  <version>1.0.0</version>
+		  <scope>system</scope>
+		  <systemPath>
+		    ${java.jetty}/websocket-api.jar
+		  </systemPath>
+		</dependency>	
+
+		<dependency>
+		  <groupId>websocketCLIENT</groupId>
+		  <artifactId>org.eclipse.jetty.websocket.client</artifactId>
+		  <version>1.0.0</version>
+		  <scope>system</scope>
+		  <systemPath>
+		    ${java.jetty}/websocket-client.jar
+		  </systemPath>
+		</dependency>	
+
+		<dependency>
+		  <groupId>websocketCOMMON</groupId>
+		  <artifactId>org.eclipse.jetty.websocket.common</artifactId>
+		  <version>1.0.0</version>
+		  <scope>system</scope>
+		  <systemPath>
+		    ${java.jetty}/websocket-common.jar
+		  </systemPath>
+		</dependency>	
+		
+		
+		
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

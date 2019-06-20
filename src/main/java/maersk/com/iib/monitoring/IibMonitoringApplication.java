@@ -1,0 +1,15 @@
+package maersk.com.iib.monitoring;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@SpringBootApplication
+@EnableScheduling
+public class IibMonitoringApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(IibMonitoringApplication.class, args);
+	}
+
+}
