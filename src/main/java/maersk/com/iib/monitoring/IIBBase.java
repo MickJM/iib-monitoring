@@ -12,9 +12,30 @@ public class IIBBase {
 	protected static final String IIBPREFIX = "iib:";			
 
 	// Node name
-	protected String nodeName;
+	private String nodeName;
 	protected void setNodeName(String val) {
 		this.nodeName = val;
+	}
+	protected String getNodeName() {
+		return this.nodeName;
+	}
+
+	// Queue Manager associated with the IIB node
+	private String queueManager;
+	protected void setQueueManagerName(String val) {
+		this.queueManager = val;
+	}
+	protected String getQueueManagerName() {
+		return this.queueManager;
+	}
+
+	// IIB version
+	private String iibVersion;
+	protected void setIIBVersion(String val) {
+		this.iibVersion = val;
+	}
+	protected String getIIBVersion() {
+		return this.iibVersion;
 	}
 	
 	// Broker proxy

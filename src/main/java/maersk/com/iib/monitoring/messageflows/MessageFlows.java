@@ -3,9 +3,11 @@ package maersk.com.iib.monitoring.messageflows;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +36,8 @@ public class MessageFlows extends IIBBase {
 
 		Enumeration<ExecutionGroupProxy> egroups = this.bp.getExecutionGroups(null);
 		List<ExecutionGroupProxy> egps = Collections.list(egroups);
-		
+        ResetValues();
+        
 		for (ExecutionGroupProxy egroup: egps) {
 
 			String egName = egroup.getName().trim();
@@ -52,6 +55,9 @@ public class MessageFlows extends IIBBase {
 				List<MessageFlowProxy> msgFlows = Collections.list(mfp);
 
 				for (MessageFlowProxy flow: msgFlows) {
+					
+					String flowName = flow.getName().trim();
+					
 					int val = 0;
 			        if (flow.isRunEnabled()) {
 			        	val = 1;
@@ -60,24 +66,61 @@ public class MessageFlows extends IIBBase {
 			        	val = 2;
 			        }
 
-					AtomicInteger mf = iibMessageFlows.get(app.getName().trim());
-					if (mf == null) {
-						iibMessageFlows.put(appName, 
-							Metrics.gauge(new StringBuilder()
-							.append(IIBPREFIX)
-							.append("iibMessageFlow")
-							.toString(),  
-							Tags.of("iibNodeName", this.nodeName,
-									"integrationServerName", egroup.getName().trim(),
-									"applicationName", app.getName().trim(),
-									"messageFlow", flow.getName().trim()),
-						new AtomicInteger(val)));
-					} else {
-						mf.set(val);
-					}        
+			        SetMetrics(val, egName, appName, flowName);
+			        			        
 				}				
 			}
 		}
 	}
+
+	private void SetMetrics(int val, String egName, String appName, String flowName) {
 		
+        String name = egName + "_" + appName + "_" + flowName;
+		AtomicInteger mf = iibMessageFlows.get(name);
+		if (mf == null) {
+			iibMessageFlows.put(name, 
+				Metrics.gauge(new StringBuilder()
+				.append(IIBPREFIX)
+				.append("iibMessageFlow")
+				.toString(),  
+				Tags.of("iibNodeName", getNodeName(),
+						"integrationServerName", egName,
+						"applicationName", appName,
+						"messageFlow", flowName),
+			new AtomicInteger(val)));
+		} else {
+			mf.set(val);
+		}        
+		
+	}
+	
+	public void NotRunning() {
+		SetMetricValues(0);
+	}
+	
+	public void ResetValues() {
+		SetMetricValues(-1);
+	}
+	
+	
+	// Not running, so for any entries in the applications list - set the values to '0' (zero)
+	// ... the values will not disappear, since Guages are either 'set' or 'not set'
+	private void SetMetricValues(int val) {
+
+		Iterator<Entry<String, AtomicInteger>> listListener = this.iibMessageFlows.entrySet().iterator();
+		while (listListener.hasNext()) {
+	        Map.Entry pair = (Map.Entry)listListener.next();
+	        String key = (String) pair.getKey();
+	        try {
+				AtomicInteger i = (AtomicInteger) pair.getValue();
+				if (i != null) {
+					i.set(val);
+				}
+	        } catch (Exception e) {
+	        }
+		}
+		
+		
+	}
+
 }

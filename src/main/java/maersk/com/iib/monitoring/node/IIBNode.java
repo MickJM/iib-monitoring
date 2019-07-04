@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.ibm.broker.config.proxy.BrokerProxy;
@@ -27,8 +28,11 @@ import maersk.com.iib.monitoring.IIBBase;
 @Component
 public class IIBNode extends IIBBase {
 
-	@Autowired
-	private CollectorRegistry registry;
+    @Value("${application.debug}")
+    private boolean _debug;
+
+	//@Autowired
+	//private CollectorRegistry registry;
 		
     //IIB
     private Map<String,AtomicInteger>iibStatusMap = new HashMap<String, AtomicInteger>();
@@ -37,9 +41,19 @@ public class IIBNode extends IIBBase {
 		super();
 	}
 	
+	// Set IIB node properties for;
+	//   queue manager
+	//   IIB version
+	//public void SetNodeProperties() throws ConfigManagerProxyPropertyNotInitializedException {
+		//setQueueManagerName(this.bp.getQueueManagerName().trim());
+		//String x = Integer.toString(this.bp.getBrokerVersion());
+		//setIIBVersion(x); 
+	//}
+	
+	// Get IIB node name
 	public String GetNodeName() throws ConfigManagerProxyPropertyNotInitializedException {
-		this.nodeName = this.bp.getName().trim();
-		return this.nodeName;
+		setNodeName(this.bp.getName().trim());		
+		return getNodeName();
 	}
 
 	// Get IIB Broker node metrics
@@ -52,22 +66,34 @@ public class IIBNode extends IIBBase {
 			}
 
 		} catch (ConfigManagerProxyPropertyNotInitializedException e) {
+		} catch (NullPointerException e) {
 		}
-				
-		AtomicInteger i = iibStatusMap.get(this.nodeName);
+		
+		SetNodeMetrics(val);
+	}
+	
+	// IIB isn't running, so set to '0'
+	public void NotRunning() {
+	
+		SetNodeMetrics(0);
+		
+	}
+	
+	// Set the IIB node metric
+	private void SetNodeMetrics(int val) {
+		
+		AtomicInteger i = iibStatusMap.get(getNodeName());
 		if (i == null) {
-			iibStatusMap.put(this.nodeName, 
+			iibStatusMap.put(getNodeName(), 
 				Metrics.gauge(new StringBuilder()
 				.append(IIBPREFIX)
 				.append("iibNodeStatus")
 				.toString(),  
-				Tags.of("iibNodeName", this.nodeName),
+				Tags.of("iibNodeName", getNodeName()),
 			new AtomicInteger(val)));
 		} else {
 			i.set(val);
 		}        
-		
-		
 		
 	}
 }

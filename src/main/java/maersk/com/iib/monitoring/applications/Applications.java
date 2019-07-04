@@ -3,9 +3,11 @@ package maersk.com.iib.monitoring.applications;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,19 +35,23 @@ public class Applications extends IIBBase {
 	
 		Enumeration<ExecutionGroupProxy> egroups = this.bp.getExecutionGroups(null);
 		List<ExecutionGroupProxy> egps = Collections.list(egroups);
+        ResetMetrics();
 		
 		for (ExecutionGroupProxy egroup: egps) {
 
 			String egName = egroup.getName().trim();
-	        
+			log.info("Applications: egName:" + egName);
+
 	        Properties p = new Properties();
-	        p.setProperty(AttributeConstants.NAME_PROPERTY, egroup.getName().trim());
+	        p.setProperty(AttributeConstants.NAME_PROPERTY, egName);
 
 	        Enumeration<ApplicationProxy> ap = egroup.getApplications(null);
 			List<ApplicationProxy> apps = Collections.list(ap);
 			for (ApplicationProxy app: apps) {
 				
 				String appName = app.getName().trim();
+				log.info("Applications: appName:" + appName);
+				log.info("Applications: status :" + app.isRunning());
 
 				int val = 0;
 		        if (app.isRunEnabled()) {
@@ -54,25 +60,61 @@ public class Applications extends IIBBase {
 		        if (app.isRunning()) {
 		        	val = 2;
 		        }
-		      
-				AtomicInteger a = iibApplications.get(app.getName().trim());
-				if (a == null) {
-					iibApplications.put(appName, 
-						Metrics.gauge(new StringBuilder()
-						.append(IIBPREFIX)
-						.append("iibApplicationStatus")
-						.toString(),  
-						Tags.of("iibNodeName", this.nodeName,
-								"integrationServerName", egroup.getName().trim(),
-								"applicationName", app.getName().trim()),
-					new AtomicInteger(val)));
-				} else {
-					a.set(val);
-				}        
-		        
+		        SetMetric(val, appName, egName);
+		        		        
 			}
-			
 		}
+	}
+	
+	private void SetMetric(int val, String appName, String egName) {
+		
+		log.info("Applications: SetMetrics");
+		
+		String name = appName + "_" + egName;
+		AtomicInteger a = iibApplications.get(name);
+		if (a == null) {
+			iibApplications.put(name, 
+				Metrics.gauge(new StringBuilder()
+				.append(IIBPREFIX)
+				.append("iibApplicationStatus")
+				.toString(),  
+				Tags.of("iibNodeName", getNodeName(),
+						"integrationServerName", egName,
+						"applicationName", appName),
+			new AtomicInteger(val)));
+		} else {
+			a.set(val);
+		}        
 		
 	}
+	
+	public void NotRunning() {
+		SetMetricValues(0);
+	}
+	
+	public void ResetMetrics() {
+		SetMetricValues(-1);
+	}
+	
+	
+	// Not running, so for any entries in the applications list - set the values to '0' (zero)
+	// ... the values will not disappear, since Guages are either 'set' or 'not set'
+	public void SetMetricValues(int val) {
+
+		Iterator<Entry<String, AtomicInteger>> listListener = this.iibApplications.entrySet().iterator();
+		while (listListener.hasNext()) {
+	        Map.Entry pair = (Map.Entry)listListener.next();
+	        String key = (String) pair.getKey();
+	        try {
+				AtomicInteger i = (AtomicInteger) pair.getValue();
+				if (i != null) {
+					i.set(val);
+				}
+	        } catch (Exception e) {
+	        }
+		}
+		
+		
+	}
+
 }

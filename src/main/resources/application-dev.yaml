@@ -1,11 +1,9 @@
-application:
-  debug: false
 ibm:
   iib:
-    node: override
-    connName: override
+    node: TSTIPD01
+    connName: localhost(4415)
     event:
-      delayInMilliSeconds: 0
+      delayInMilliSeconds: 10000
 management:
   endpoints:
     web:
@@ -18,11 +16,11 @@ management:
     enabled: false
 info:
   app:
-    name: overvide
-    description: override
+    name: IIB-Metrics
+    description: IBM IIB Metrics
     version: 1.0.0.0
     java:
       version: 1.8.0.0
 server:
   port:
-    0000
+    8083
