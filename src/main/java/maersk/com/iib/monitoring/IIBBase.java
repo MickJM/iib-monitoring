@@ -2,10 +2,14 @@ package maersk.com.iib.monitoring;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.ibm.broker.config.proxy.BrokerProxy;
 
 public class IIBBase {
+
+    @Value("${application.debug}")
+    protected boolean _debug;
 
 	// loggin and prefix
 	protected Logger log = LogManager.getLogger(this.getClass());
@@ -44,4 +48,24 @@ public class IIBBase {
 		this.bp = value;
 	}
 
+	protected final int APP_RESET = -1;
+	protected final int APP_NOT_RUNNING = 0;
+	protected final int APP_IS_RUN_ENABLED = 1;
+	protected final int APP_IS_RUNNING = 2;
+
+	protected final int INTSERVER_RESET = -1;
+	protected final int INTSERVER_NOT_RUNNING = 0;
+	protected final int INTSERVER_IS_RUN_ENABLED = 1;
+	protected final int INTSERVER_IS_RUNNING = 2;
+
+	protected final int MSGFLOW_RESET = -1;
+	protected final int MSGFLOW_NOT_RUNNING = 0;
+	protected final int MSGFLOW_IS_RUN_ENABLED = 1;
+	protected final int MSGFLOW_IS_RUNNING = 2;
+	
+	protected final int NODE_RESET = -1;
+	protected final int NODE_NOT_RUNNING = 0;
+	protected final int NODE_IS_RUN_ENABLED = 1;
+	protected final int NODE_IS_RUNNING = 2;
+	
 }

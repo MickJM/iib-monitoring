@@ -32,11 +32,11 @@ public class MessageFlows extends IIBBase {
     	super();
     }
     
-	public void GetMessageFlowMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
+	public void getMessageFlowMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
 
 		Enumeration<ExecutionGroupProxy> egroups = this.bp.getExecutionGroups(null);
 		List<ExecutionGroupProxy> egps = Collections.list(egroups);
-        ResetValues();
+        resetValues();
         
 		for (ExecutionGroupProxy egroup: egps) {
 
@@ -58,22 +58,22 @@ public class MessageFlows extends IIBBase {
 					
 					String flowName = flow.getName().trim();
 					
-					int val = 0;
+					int val = MSGFLOW_NOT_RUNNING;
 			        if (flow.isRunEnabled()) {
-			        	val = 1;
+			        	val = MSGFLOW_IS_RUN_ENABLED;
 			        }
 			        if (flow.isRunning()) {
-			        	val = 2;
+			        	val = MSGFLOW_IS_RUNNING;
 			        }
 
-			        SetMetrics(val, egName, appName, flowName);
+			        setMetrics(val, egName, appName, flowName);
 			        			        
 				}				
 			}
 		}
 	}
 
-	private void SetMetrics(int val, String egName, String appName, String flowName) {
+	private void setMetrics(int val, String egName, String appName, String flowName) {
 		
         String name = egName + "_" + appName + "_" + flowName;
 		AtomicInteger mf = iibMessageFlows.get(name);
@@ -94,18 +94,18 @@ public class MessageFlows extends IIBBase {
 		
 	}
 	
-	public void NotRunning() {
-		SetMetricValues(0);
+	public void notRunning() {
+		setMetricValues(MSGFLOW_NOT_RUNNING);
 	}
 	
-	public void ResetValues() {
-		SetMetricValues(-1);
+	public void resetValues() {
+		setMetricValues(MSGFLOW_RESET);
 	}
 	
 	
 	// Not running, so for any entries in the applications list - set the values to '0' (zero)
 	// ... the values will not disappear, since Guages are either 'set' or 'not set'
-	private void SetMetricValues(int val) {
+	private void setMetricValues(int val) {
 
 		Iterator<Entry<String, AtomicInteger>> listListener = this.iibMessageFlows.entrySet().iterator();
 		while (listListener.hasNext()) {

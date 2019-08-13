@@ -28,59 +28,43 @@ import maersk.com.iib.monitoring.IIBBase;
 @Component
 public class IIBNode extends IIBBase {
 
-    @Value("${application.debug}")
-    private boolean _debug;
-
-	//@Autowired
-	//private CollectorRegistry registry;
-		
-    //IIB
+    //IIB status
     private Map<String,AtomicInteger>iibStatusMap = new HashMap<String, AtomicInteger>();
 	
 	public IIBNode() {
 		super();
 	}
-	
-	// Set IIB node properties for;
-	//   queue manager
-	//   IIB version
-	//public void SetNodeProperties() throws ConfigManagerProxyPropertyNotInitializedException {
-		//setQueueManagerName(this.bp.getQueueManagerName().trim());
-		//String x = Integer.toString(this.bp.getBrokerVersion());
-		//setIIBVersion(x); 
-	//}
-	
+		
 	// Get IIB node name
-	public String GetNodeName() throws ConfigManagerProxyPropertyNotInitializedException {
+	public String getIIBNodeName() throws ConfigManagerProxyPropertyNotInitializedException {
 		setNodeName(this.bp.getName().trim());		
 		return getNodeName();
 	}
 
 	// Get IIB Broker node metrics
-	public void GetNodeMetrics() {
+	public void getNodeMetrics() {
 	
-		int val = 0;		
+		int val = NODE_NOT_RUNNING;		
 		try {
 			if (this.bp.isRunning()) {
-				val = 1;
+				val = NODE_IS_RUNNING;
 			}
 
 		} catch (ConfigManagerProxyPropertyNotInitializedException e) {
 		} catch (NullPointerException e) {
 		}
 		
-		SetNodeMetrics(val);
+		setNodeMetrics(val);
 	}
 	
 	// IIB isn't running, so set to '0'
-	public void NotRunning() {
-	
-		SetNodeMetrics(0);
+	public void notRunning() {	
+		setNodeMetrics(NODE_NOT_RUNNING);
 		
 	}
 	
 	// Set the IIB node metric
-	private void SetNodeMetrics(int val) {
+	private void setNodeMetrics(int val) {
 		
 		AtomicInteger i = iibStatusMap.get(getNodeName());
 		if (i == null) {

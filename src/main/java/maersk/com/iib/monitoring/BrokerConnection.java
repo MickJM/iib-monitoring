@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.ibm.broker.config.proxy.BrokerConnectionParameters;
 import com.ibm.broker.config.proxy.BrokerProxy;
@@ -32,20 +33,26 @@ public class BrokerConnection {
 
     @Value("${application.debug}")
     private boolean _debug;
-
     @Value("${ibm.iib.node}")
     private String node;
     
     @Value("${ibm.iib.connName}")
-    private String connName;
-    
+    private String connName;   
     private String hostName;
     private int port;
     
+
+    @Value("${ibm.iib.userid:}")
+    private String userid;
+    @Value("${ibm.iib.password:}")
+    private String password;
+    @Value("${ibm.iib.useSSL:false}")
+    private boolean useSSL;
+
     @Value("${ibm.iib.event.delayInMilliSeconds}")
     private long resetIterations;
 
-    private BrokerConnectionParameters bcon = null;
+    private BrokerConnectionParameters bconn = null;
     private BrokerProxy bp = null;
 	
     private String brokerName;
@@ -82,77 +89,77 @@ public class BrokerConnection {
 	private BrokerConnection() {
 	}
 
+	// Every 'x' seconds, get the metrics
 	@Scheduled(fixedDelayString="${ibm.iib.event.delayInMilliSeconds}")
-	public void Scheduler() {
+	public void scheduler() {
 		
 		if (this._debug) {log.info("IIB Broker stats");}
 
 		try {
 
-			if (this.bcon != null) {
+			if (this.bconn != null) {
 				if (this.bp != null) {
 					if (!this.bp.isRunning()) {
-						SetProperties();
+						setProperties();
 					}
-					GetMetrics();
+					getMetrics();
 					
 				} else {
-					CreateIIBConnection();
-					SetProperties();
+					createIIBConnection();
+					setProperties();
 					this.iibNode.setNodeName(this.node);
-					NotRunning();
+					brokerNotRunning();
 					
 				}
 			} else {
-				CreateIIBConnection();
-				SetProperties();
+				createIIBConnection();
+				setProperties();
 				this.iibNode.setNodeName(this.node);
-				NotRunning();
+				brokerNotRunning();
 
 			}
 						
 		} catch (ConfigManagerProxyPropertyNotInitializedException e) {
 			log.error("ConfigManagerProxy Not Initialized: " + e.getMessage());
-			CreateIIBConnection();
-			SetProperties();
-			NotRunning();
+			createIIBConnection();
+			setProperties();
+			brokerNotRunning();
 			
 		} catch (Exception e) {
 			log.error("Not connected to IIB node: " + e.getMessage());
-			CreateIIBConnection();
-			SetProperties();
-			NotRunning();
+			createIIBConnection();
+			setProperties();
+			brokerNotRunning();
 		}
 		
 		
 	}
 
-	private void NotRunning() {
-		
-		log.info("IIB NOT RUNNING");
-		
-		this.iibNode.NotRunning();
-		this.iibExecutionGroups.NotRunning();
-		this.iibApplications.NotRunning();
-		this.iibMessageFlows.NotRunning();
+	/*
+	 * Indicate the the broker is not running
+	 */
+	private void brokerNotRunning() {	
+		this.iibNode.notRunning();
+		this.iibExecutionGroups.notRunning();
+		this.iibApplications.notRunning();
+		this.iibMessageFlows.notRunning();
 		
 	}
-	// Get the metrics
-	private void GetMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
 	
-		GetNodeMetrics();
-		GetExecutionGroups();
-		GetApplications();
-		GetMessageFlows();
+	// Get the metrics
+	private void getMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
+		getNodeMetrics();
+		getExecutionGroups();
+		getApplications();
+		getMessageFlows();
 		
 	}
 
 	
 	// Get the IIB node metrics and set the name of the broker
-	private void GetNodeMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
-		
-		this.brokerName = this.iibNode.GetNodeName();
-		this.iibNode.GetNodeMetrics();
+	private void getNodeMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
+		this.brokerName = this.iibNode.getNodeName();
+		this.iibNode.getIIBNodeName();
 		
 		this.iibExecutionGroups.setNodeName(this.brokerName);
 		this.iibApplications.setNodeName(this.brokerName);
@@ -161,46 +168,50 @@ public class BrokerConnection {
 	}
 	
 	// Get the Execution Group metrics (IntegrationServer)
-	private void GetExecutionGroups() throws ConfigManagerProxyPropertyNotInitializedException {
-		
-		this.iibExecutionGroups.SetExecutionMetrics();
+	private void getExecutionGroups() throws ConfigManagerProxyPropertyNotInitializedException {
+		this.iibExecutionGroups.setExecutionMetrics();
 		
 	}
 	
 	// Get the Application metrics
-	private void GetApplications() throws ConfigManagerProxyPropertyNotInitializedException {
-		
-		this.iibApplications.GetApplicationMetrics();
+	private void getApplications() throws ConfigManagerProxyPropertyNotInitializedException {
+		this.iibApplications.getApplicationMetrics();
 		
 	}
 
 	// Get the MessageFlow metrics
-	private void GetMessageFlows() throws ConfigManagerProxyPropertyNotInitializedException {
-		
-		this.iibMessageFlows.GetMessageFlowMetrics();
+	private void getMessageFlows() throws ConfigManagerProxyPropertyNotInitializedException {
+		this.iibMessageFlows.getMessageFlowMetrics();
 		
 	}
 	
 	
 	// Create a connection to the IIB node
-	private void CreateIIBConnection() {
+	private void createIIBConnection() {
+		setConnectionDetails();
+		boolean useCredentials = validateCredentials();
 		
-		GetEnvironmentVariables();
-		this.bcon = new IntegrationNodeConnectionParameters(this.hostName, this.port);		
-		
+		/*
+		 * if we are using credential, then connect with them, together if the connection is over SSL 
+		 */
+		if (useCredentials) {
+			this.bconn = new IntegrationNodeConnectionParameters(this.hostName, this.port, this.userid, this.password, this.useSSL);		
+			
+		} else {
+			this.bconn = new IntegrationNodeConnectionParameters(this.hostName, this.port);		
+		}
 	}
 	
 	
 	// create an instance of the broker proxy and set 
-	private void SetProperties() {
-	
+	private void setProperties() {
 		if (this._debug) {
 			log.info("Host: " + this.hostName);
 			log.info("Port: " + this.port);
 		}
 		
 		try {
-			this.bp = BrokerProxy.getInstance(this.bcon);
+			this.bp = BrokerProxy.getInstance(this.bconn);
 			this.iibNode.setBrokerProxy(this.bp);
 			//this.iibNode.SetNodeProperties();
 			
@@ -208,8 +219,8 @@ public class BrokerConnection {
 			this.iibApplications.setBrokerProxy(this.bp);
 			this.iibMessageFlows.setBrokerProxy(this.bp);
 			
-			if (!this.iibNode.GetNodeName().equals(this.node)) {
-				log.error("IIB Node name mismatch");
+			if (!this.iibNode.getIIBNodeName().equals(this.node)) {
+				log.error("IIB Node name mismatch"); 
 				System.exit(3);
 			}
 		} catch (ConfigManagerProxyLoggedException e) {
@@ -225,7 +236,7 @@ public class BrokerConnection {
 	}
 	
 	// Get the host name and port
-	private void GetEnvironmentVariables() {
+	private void setConnectionDetails() {
 		
 		// If null or blank ... error
 		if (!(this.node != null && !this.node.isEmpty())) {
@@ -251,9 +262,22 @@ public class BrokerConnection {
 		}
 	
 	}
+
+	// Get the host name and port
+	private boolean validateCredentials() {
+		boolean ret = false;
+	
+		if ((!StringUtils.isEmpty(this.userid)) && (!StringUtils.isEmpty(this.password))) {
+			ret = true;
+		}
+		
+		return ret;
+		
+	}
+	
 	
 	@PreDestroy
-	private void Disconnect() {
+	private void disconnect() {
 		if (this._debug) { log.info("Disconnecting from IIB node"); }
 
 		if (this.bp != null) {

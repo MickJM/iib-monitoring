@@ -1,0 +1,26 @@
+ibm:
+  iib:
+    node: TSTIPD01
+    connName: localhost(4415)
+    event:
+      delayInMilliSeconds: 10000
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, prometheus
+  endpoint:
+    health:
+      show-details: always        
+  security:
+    enabled: false
+info:
+  app:
+    name: IIB-Metrics
+    description: IBM IIB Monitoring Metrics (Prod)
+    version: 1.0.0.0
+    java:
+      version: 1.8.0.0
+server:
+  port:
+    8083

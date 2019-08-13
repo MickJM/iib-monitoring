@@ -30,30 +30,30 @@ public class ExecutionGroup extends IIBBase {
 		super();
 	}
 
-	public void SetExecutionMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
+	public void setExecutionMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
 		
 		Enumeration<ExecutionGroupProxy> egroups = this.bp.getExecutionGroups(null);
 		List<ExecutionGroupProxy> egps = Collections.list(egroups);
-        ResetValues();
+        resetValues();
 	
 		for (ExecutionGroupProxy egroup: egps) {
 
 			String egName = egroup.getName().trim();
-	        int val = 0;
+	        int val = INTSERVER_NOT_RUNNING;
 	        if (egroup.isRunEnabled()) {
-	        	val = 1;
+	        	val = INTSERVER_IS_RUN_ENABLED;
 	        }
 	        if (egroup.isRunning()) {
-	        	val = 2;
+	        	val = INTSERVER_IS_RUNNING;
 	        }
-	        SetMetric(val, egName);
+	        setMetric(val, egName);
 	        
 		}
 		
 	}
 	
 	
-	private void SetMetric(int val, String egName) throws ConfigManagerProxyPropertyNotInitializedException {
+	private void setMetric(int val, String egName) throws ConfigManagerProxyPropertyNotInitializedException {
 				
 		AtomicInteger i = iibExecutionGroupMap.get(egName);
 		if (i == null) {
@@ -71,17 +71,17 @@ public class ExecutionGroup extends IIBBase {
 	        
 	}
 
-	public void NotRunning() {
-		SetMetricsValue(0);
+	public void notRunning() {
+		setMetricsValue(APP_NOT_RUNNING);
 	}
 	
-	public void ResetValues() {
-		SetMetricsValue(-1);
+	public void resetValues() {
+		setMetricsValue(INTSERVER_RESET);
 	}
 	
 	// Not running, so for any entries in the execution group list - set the values to '0' (zero)
 	// ... the values will not disappear, since Guages are either 'set' or 'not set'
-	public void SetMetricsValue(int val) {
+	public void setMetricsValue(int val) {
 
 		Iterator<Entry<String, AtomicInteger>> listListener = this.iibExecutionGroupMap.entrySet().iterator();
 		while (listListener.hasNext()) {

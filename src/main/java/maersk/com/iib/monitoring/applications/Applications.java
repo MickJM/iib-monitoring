@@ -25,22 +25,24 @@ import maersk.com.iib.monitoring.IIBBase;
 
 public class Applications extends IIBBase {
 
-    private Map<String,AtomicInteger>iibApplications = new HashMap<String, AtomicInteger>();
+    private static final int APP_RESET = 0;
+	private Map<String,AtomicInteger>iibApplications = new HashMap<String, AtomicInteger>();
     
     public Applications() {
     	super();
     }
     
-	public void GetApplicationMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
+    // For each execution group, 
+	public void getApplicationMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
 	
 		Enumeration<ExecutionGroupProxy> egroups = this.bp.getExecutionGroups(null);
 		List<ExecutionGroupProxy> egps = Collections.list(egroups);
-        ResetMetrics();
+        resetMetrics();
 		
 		for (ExecutionGroupProxy egroup: egps) {
 
 			String egName = egroup.getName().trim();
-			log.info("Applications: egName:" + egName);
+			if (this._debug) { log.info("Applications: egName:" + egName); }
 
 	        Properties p = new Properties();
 	        p.setProperty(AttributeConstants.NAME_PROPERTY, egName);
@@ -50,25 +52,25 @@ public class Applications extends IIBBase {
 			for (ApplicationProxy app: apps) {
 				
 				String appName = app.getName().trim();
-				log.info("Applications: appName:" + appName);
-				log.info("Applications: status :" + app.isRunning());
-
-				int val = 0;
+				if (this._debug) { 
+					log.info("Applications: appName:" + appName);
+					log.info("Applications: status :" + app.isRunning());
+				}
+				
+				int val = APP_NOT_RUNNING;
 		        if (app.isRunEnabled()) {
-		        	val = 1;
+		        	val = APP_IS_RUN_ENABLED;
 		        }
 		        if (app.isRunning()) {
-		        	val = 2;
+		        	val = APP_IS_RUNNING;
 		        }
-		        SetMetric(val, appName, egName);
+		        setMetric(val, appName, egName);
 		        		        
 			}
 		}
 	}
 	
-	private void SetMetric(int val, String appName, String egName) {
-		
-		log.info("Applications: SetMetrics");
+	private void setMetric(int val, String appName, String egName) {
 		
 		String name = appName + "_" + egName;
 		AtomicInteger a = iibApplications.get(name);
@@ -88,18 +90,21 @@ public class Applications extends IIBBase {
 		
 	}
 	
-	public void NotRunning() {
-		SetMetricValues(0);
+	public void notRunning() {
+		setMetricValues(APP_NOT_RUNNING);
 	}
 	
-	public void ResetMetrics() {
-		SetMetricValues(-1);
+	public void resetMetrics() {
+		setMetricValues(APP_RESET);
 	}
 	
 	
-	// Not running, so for any entries in the applications list - set the values to '0' (zero)
+	// Not running, so for any entries in the applications list - set the values to '0' (zero) or -1
 	// ... the values will not disappear, since Guages are either 'set' or 'not set'
-	public void SetMetricValues(int val) {
+	// '0'  - IIB applications are not running
+	// '-1' - IIB application metrics are reset
+	//
+	public void setMetricValues(int val) {
 
 		Iterator<Entry<String, AtomicInteger>> listListener = this.iibApplications.entrySet().iterator();
 		while (listListener.hasNext()) {
