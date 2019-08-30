@@ -1,5 +1,10 @@
 package maersk.com.iib.monitoring.messageflows;
 
+/*
+ * Get the 'message flow' metrics for each execution group, for an IIB node
+ * 
+ */
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -19,6 +24,8 @@ import com.ibm.broker.config.proxy.BrokerProxy;
 import com.ibm.broker.config.proxy.ConfigManagerProxyPropertyNotInitializedException;
 import com.ibm.broker.config.proxy.ExecutionGroupProxy;
 import com.ibm.broker.config.proxy.MessageFlowProxy;
+import com.ibm.broker.config.proxy.SharedLibraryProxy;
+import com.ibm.broker.config.proxy.StaticLibraryProxy;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
@@ -27,6 +34,9 @@ import maersk.com.iib.monitoring.IIBBase;
 public class MessageFlows extends IIBBase {
 
     private Map<String,AtomicInteger>iibMessageFlows = new HashMap<String, AtomicInteger>();
+   
+    private Map<String,AtomicInteger>sharedLibs = new HashMap<String, AtomicInteger>();
+    private Map<String,AtomicInteger>staticLibs = new HashMap<String, AtomicInteger>();
 
     public MessageFlows() {
     	super();
@@ -41,7 +51,7 @@ public class MessageFlows extends IIBBase {
 		for (ExecutionGroupProxy egroup: egps) {
 
 			String egName = egroup.getName().trim();
-	        
+			
 	        Properties p = new Properties();
 	        p.setProperty(AttributeConstants.NAME_PROPERTY, egroup.getName().trim());
 
@@ -50,25 +60,25 @@ public class MessageFlows extends IIBBase {
 			for (ApplicationProxy app: apps) {
 				
 				String appName = app.getName().trim();
-
+				
 			    Enumeration<MessageFlowProxy> mfp = app.getMessageFlows(null);
-				List<MessageFlowProxy> msgFlows = Collections.list(mfp);
-
+				List<MessageFlowProxy> msgFlows = Collections.list(mfp);			
 				for (MessageFlowProxy flow: msgFlows) {
-					
+				
 					String flowName = flow.getName().trim();
 					
-					int val = MSGFLOW_NOT_RUNNING;
+					int val = IIBMONConstants.MSGFLOW_NOT_RUNNING;
 			        if (flow.isRunEnabled()) {
-			        	val = MSGFLOW_IS_RUN_ENABLED;
+			        	val = IIBMONConstants.MSGFLOW_IS_RUN_ENABLED;
 			        }
 			        if (flow.isRunning()) {
-			        	val = MSGFLOW_IS_RUNNING;
+			        	val = IIBMONConstants.MSGFLOW_IS_RUNNING;
 			        }
 
 			        setMetrics(val, egName, appName, flowName);
 			        			        
-				}				
+				}
+				
 			}
 		}
 	}
@@ -95,11 +105,11 @@ public class MessageFlows extends IIBBase {
 	}
 	
 	public void notRunning() {
-		setMetricValues(MSGFLOW_NOT_RUNNING);
+		setMetricValues(IIBMONConstants.MSGFLOW_NOT_RUNNING);
 	}
 	
 	public void resetValues() {
-		setMetricValues(MSGFLOW_RESET);
+		setMetricValues(IIBMONConstants.MSGFLOW_RESET);
 	}
 	
 	

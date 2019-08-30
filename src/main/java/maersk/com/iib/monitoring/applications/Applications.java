@@ -1,5 +1,10 @@
 package maersk.com.iib.monitoring.applications;
 
+/*
+ * Get the 'application' metrics from an IIB node
+ * 
+ */
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -57,12 +62,12 @@ public class Applications extends IIBBase {
 					log.info("Applications: status :" + app.isRunning());
 				}
 				
-				int val = APP_NOT_RUNNING;
+				int val = IIBMONConstants.APP_NOT_RUNNING;
 		        if (app.isRunEnabled()) {
-		        	val = APP_IS_RUN_ENABLED;
+		        	val = IIBMONConstants.APP_IS_RUN_ENABLED;
 		        }
 		        if (app.isRunning()) {
-		        	val = APP_IS_RUNNING;
+		        	val = IIBMONConstants.APP_IS_RUNNING;
 		        }
 		        setMetric(val, appName, egName);
 		        		        
@@ -91,11 +96,11 @@ public class Applications extends IIBBase {
 	}
 	
 	public void notRunning() {
-		setMetricValues(APP_NOT_RUNNING);
+		setMetricValues(IIBMONConstants.APP_NOT_RUNNING);
 	}
 	
 	public void resetMetrics() {
-		setMetricValues(APP_RESET);
+		setMetricValues(IIBMONConstants.APP_RESET);
 	}
 	
 	

@@ -1,5 +1,12 @@
 package maersk.com.iib.monitoring;
 
+/*
+ * Inital version: Base object for other IIB monitoring object
+ * 
+ * 30/08/2019 Fixed NODE_IS_RUNNING, set to value 1
+ *  
+ */
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,7 +15,7 @@ import com.ibm.broker.config.proxy.BrokerProxy;
 
 public class IIBBase {
 
-    @Value("${application.debug}")
+    @Value("${application.debug:false}")
     protected boolean _debug;
 
 	// loggin and prefix
@@ -48,24 +55,27 @@ public class IIBBase {
 		this.bp = value;
 	}
 
-	protected final int APP_RESET = -1;
-	protected final int APP_NOT_RUNNING = 0;
-	protected final int APP_IS_RUN_ENABLED = 1;
-	protected final int APP_IS_RUNNING = 2;
+	public interface IIBMONConstants {
+		static final int APP_RESET = -1;
+		static final int APP_NOT_RUNNING = 0;
+		static final int APP_IS_RUN_ENABLED = 1;
+		static final int APP_IS_RUNNING = 2;
 
-	protected final int INTSERVER_RESET = -1;
-	protected final int INTSERVER_NOT_RUNNING = 0;
-	protected final int INTSERVER_IS_RUN_ENABLED = 1;
-	protected final int INTSERVER_IS_RUNNING = 2;
+		static final int INTSERVER_RESET = -1;
+		
+		static final int INTSERVER_NOT_RUNNING = 0;
+		static final int INTSERVER_IS_RUN_ENABLED = 1;
+		static final int INTSERVER_IS_RUNNING = 2;
 
-	protected final int MSGFLOW_RESET = -1;
-	protected final int MSGFLOW_NOT_RUNNING = 0;
-	protected final int MSGFLOW_IS_RUN_ENABLED = 1;
-	protected final int MSGFLOW_IS_RUNNING = 2;
+		static final int MSGFLOW_RESET = -1;
+		static final int MSGFLOW_NOT_RUNNING = 0;
+		static final int MSGFLOW_IS_RUN_ENABLED = 1;
+		static final int MSGFLOW_IS_RUNNING = 2;
 	
-	protected final int NODE_RESET = -1;
-	protected final int NODE_NOT_RUNNING = 0;
-	protected final int NODE_IS_RUN_ENABLED = 1;
-	protected final int NODE_IS_RUNNING = 2;
+		static final int NODE_RESET = -1;
+		static final int NODE_NOT_RUNNING = 0;
+		static final int NODE_IS_RUNNING = 1;
+		
+	}
 	
 }

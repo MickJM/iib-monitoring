@@ -1,3 +1,5 @@
+application:
+  debug: true
 ibm:
   iib:
     node: TSTIPD01

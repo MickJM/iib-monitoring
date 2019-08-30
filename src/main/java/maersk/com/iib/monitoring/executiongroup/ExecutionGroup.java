@@ -1,5 +1,10 @@
 package maersk.com.iib.monitoring.executiongroup;
 
+/*
+ * Get the 'execution group' (Integration Server) metrics from an IIB node
+ * 
+ */
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -30,7 +35,7 @@ public class ExecutionGroup extends IIBBase {
 		super();
 	}
 
-	public void setExecutionMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
+	public void getExecutionMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
 		
 		Enumeration<ExecutionGroupProxy> egroups = this.bp.getExecutionGroups(null);
 		List<ExecutionGroupProxy> egps = Collections.list(egroups);
@@ -39,12 +44,12 @@ public class ExecutionGroup extends IIBBase {
 		for (ExecutionGroupProxy egroup: egps) {
 
 			String egName = egroup.getName().trim();
-	        int val = INTSERVER_NOT_RUNNING;
+	        int val = IIBMONConstants.INTSERVER_NOT_RUNNING;
 	        if (egroup.isRunEnabled()) {
-	        	val = INTSERVER_IS_RUN_ENABLED;
+	        	val = IIBMONConstants.INTSERVER_IS_RUN_ENABLED;
 	        }
 	        if (egroup.isRunning()) {
-	        	val = INTSERVER_IS_RUNNING;
+	        	val = IIBMONConstants.INTSERVER_IS_RUNNING;
 	        }
 	        setMetric(val, egName);
 	        
@@ -72,11 +77,11 @@ public class ExecutionGroup extends IIBBase {
 	}
 
 	public void notRunning() {
-		setMetricsValue(APP_NOT_RUNNING);
+		setMetricsValue(IIBMONConstants.APP_NOT_RUNNING);
 	}
 	
 	public void resetValues() {
-		setMetricsValue(INTSERVER_RESET);
+		setMetricsValue(IIBMONConstants.INTSERVER_RESET);
 	}
 	
 	// Not running, so for any entries in the execution group list - set the values to '0' (zero)

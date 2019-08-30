@@ -44,10 +44,10 @@ public class IIBNode extends IIBBase {
 	// Get IIB Broker node metrics
 	public void getNodeMetrics() {
 	
-		int val = NODE_NOT_RUNNING;		
+		int val = IIBMONConstants.NODE_NOT_RUNNING;		
 		try {
 			if (this.bp.isRunning()) {
-				val = NODE_IS_RUNNING;
+				val = IIBMONConstants.NODE_IS_RUNNING;
 			}
 
 		} catch (ConfigManagerProxyPropertyNotInitializedException e) {
@@ -59,7 +59,7 @@ public class IIBNode extends IIBBase {
 	
 	// IIB isn't running, so set to '0'
 	public void notRunning() {	
-		setNodeMetrics(NODE_NOT_RUNNING);
+		setNodeMetrics(IIBMONConstants.NODE_NOT_RUNNING);
 		
 	}
 	

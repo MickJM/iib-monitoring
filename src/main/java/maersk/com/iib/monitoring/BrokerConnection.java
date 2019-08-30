@@ -1,5 +1,13 @@
 package maersk.com.iib.monitoring;
 
+/*
+ * Connect to IIB brokers for Metrics
+ * 
+ * 30/08/2019 IBM advised that Node was not being set correctly.
+ *            Ensured Node Metrics was correctly invoked
+ *            
+ */
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,7 +39,7 @@ public class BrokerConnection {
 
     private Logger log = LogManager.getLogger(this.getClass());
 
-    @Value("${application.debug}")
+    @Value("${application.debug:false}")
     private boolean _debug;
     @Value("${ibm.iib.node}")
     private String node;
@@ -160,6 +168,7 @@ public class BrokerConnection {
 	private void getNodeMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
 		this.brokerName = this.iibNode.getNodeName();
 		this.iibNode.getIIBNodeName();
+		this.iibNode.getNodeMetrics();
 		
 		this.iibExecutionGroups.setNodeName(this.brokerName);
 		this.iibApplications.setNodeName(this.brokerName);
@@ -169,7 +178,7 @@ public class BrokerConnection {
 	
 	// Get the Execution Group metrics (IntegrationServer)
 	private void getExecutionGroups() throws ConfigManagerProxyPropertyNotInitializedException {
-		this.iibExecutionGroups.setExecutionMetrics();
+		this.iibExecutionGroups.getExecutionMetrics();
 		
 	}
 	
