@@ -14,9 +14,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ibm.broker.config.proxy.ApplicationProxy;
 import com.ibm.broker.config.proxy.AttributeConstants;
@@ -24,14 +26,28 @@ import com.ibm.broker.config.proxy.BrokerProxy;
 import com.ibm.broker.config.proxy.ConfigManagerProxyPropertyNotInitializedException;
 import com.ibm.broker.config.proxy.ExecutionGroupProxy;
 
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+//import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.MultiGauge;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Meter.Id;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Gauge;
 import maersk.com.iib.monitoring.IIBBase;
 
 public class Applications extends IIBBase {
+	
+	@Autowired
+	public CollectorRegistry registry;
+	
+	protected static final String lookupStatus = IIBPREFIX + "iibApplicationStatus";
 
     private static final int APP_RESET = 0;
-	private Map<String,AtomicInteger>iibApplications = new HashMap<String, AtomicInteger>();
+	//private Map<String,AtomicInteger>iibApplications = new HashMap<String, AtomicInteger>();
+	//private Map<String,Gauge>iibApplicationsGauge = new HashMap<String, Gauge>();
     
     public Applications() {
     	super();
@@ -69,14 +85,78 @@ public class Applications extends IIBBase {
 		        if (app.isRunning()) {
 		        	val = IIBMONConstants.APP_IS_RUNNING;
 		        }
-		        setMetric(val, appName, egName);
-		        		        
+		        //setMetric(val, appName, egName);
+		        setGaugeMap(val, appName, egName);
+		        
 			}
 		}
 	}
 	
+	private void setGaugeMap(int val, String appName, String egName) throws ConfigManagerProxyPropertyNotInitializedException {
+
+		String nodeName = getNodeName();
+
+		/*
+		//String name = appName + "_" + egName;
+		String key = new StringBuilder()
+				.append(IIBPREFIX)
+				.append("iibApplicationStatus")
+				.append(nodeName)
+				.append(egName)
+				.append(appName)
+				.toString();
+		String name = new StringBuilder()
+				.append(IIBPREFIX)
+				.append("iibApplicationStatus")
+				.toString();
+				
+		String[] labels = {"iibNodeName", "integrationServerName", "applicationName"};
+		
+		String[] values = {nodeName, egName, appName};
+
+		/*
+		MultiGauge m = MultiGauge.builder("statuses")
+			.tag("job", "dirty")
+	        .description("Testing")
+	        .register(meterRegistry);
+		
+		*/
+		
+		//meterRegistry.gauge("iib:Application", 10.0);
+		meterRegistry.gauge("iib:Application", 
+				Tags.of("iibNodeName", getNodeName(),
+				"integrationServerName", egName,
+				"applicationName",appName)
+				,val);
+		
+		
+		/*
+		if (!iibApplicationsGauge.containsKey(key)) {
+			iibApplicationsGauge.put(name, 
+
+					
+					Gauge.build()						
+						.help(new StringBuilder()
+								.append(IIBPREFIX)
+								.append("iibApplicationStatus")
+								.toString()) 
+						.name(name)
+						
+						.labelNames(labels)
+			//			.create());
+						.register(registry));		
+		}
+		*/
+		//Gauge g = iibApplicationsGauge.get(name);
+		//g.labels(values).set(val);
+
+	
+		
+	}
+	
 	private void setMetric(int val, String appName, String egName) {
 		
+		/*
 		String name = appName + "_" + egName;
 		AtomicInteger a = iibApplications.get(name);
 		if (a == null) {
@@ -92,6 +172,7 @@ public class Applications extends IIBBase {
 		} else {
 			a.set(val);
 		}        
+		*/
 		
 	}
 	
@@ -111,6 +192,9 @@ public class Applications extends IIBBase {
 	//
 	public void setMetricValues(int val) {
 
+		DeleteMetricEntry(lookupStatus);
+		
+		/*
 		Iterator<Entry<String, AtomicInteger>> listListener = this.iibApplications.entrySet().iterator();
 		while (listListener.hasNext()) {
 	        Map.Entry pair = (Map.Entry)listListener.next();
@@ -123,6 +207,7 @@ public class Applications extends IIBBase {
 	        } catch (Exception e) {
 	        }
 		}
+		*/
 		
 		
 	}

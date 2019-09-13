@@ -14,22 +14,32 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ibm.broker.config.proxy.AttributeConstants;
 import com.ibm.broker.config.proxy.BrokerProxy;
 import com.ibm.broker.config.proxy.ConfigManagerProxyPropertyNotInitializedException;
 import com.ibm.broker.config.proxy.ExecutionGroupProxy;
 
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Meter.Id;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 import maersk.com.iib.monitoring.IIBBase;
 
 public class ExecutionGroup extends IIBBase {
 
+	//@Autowired
+	//public MeterRegistry meterRegistry;
+
     private Map<String,AtomicInteger>iibExecutionGroupMap = new HashMap<String, AtomicInteger>();
+
+	protected static final String lookupStatus = IIBPREFIX + "iibIntegrationServerStatus";
 
 	public ExecutionGroup() {
 		super();
@@ -40,7 +50,7 @@ public class ExecutionGroup extends IIBBase {
 		Enumeration<ExecutionGroupProxy> egroups = this.bp.getExecutionGroups(null);
 		List<ExecutionGroupProxy> egps = Collections.list(egroups);
         resetValues();
-	
+        
 		for (ExecutionGroupProxy egroup: egps) {
 
 			String egName = egroup.getName().trim();
@@ -51,12 +61,20 @@ public class ExecutionGroup extends IIBBase {
 	        if (egroup.isRunning()) {
 	        	val = IIBMONConstants.INTSERVER_IS_RUNNING;
 	        }
-	        setMetric(val, egName);
-	        
+	        //setMetric(val, egName);
+	        setMetricGauge(val, egName);
 		}
 		
 	}
 	
+	private void setMetricGauge(int val, String egName) throws ConfigManagerProxyPropertyNotInitializedException {
+
+		meterRegistry.gauge("iib:iibIntegrationServerStatus", 
+				Tags.of("iibNodeName", getNodeName(),
+				"integrationServerName", egName)
+				,val);
+			
+	}
 	
 	private void setMetric(int val, String egName) throws ConfigManagerProxyPropertyNotInitializedException {
 				
@@ -88,6 +106,23 @@ public class ExecutionGroup extends IIBBase {
 	// ... the values will not disappear, since Guages are either 'set' or 'not set'
 	public void setMetricsValue(int val) {
 
+		DeleteMetricEntry(lookupStatus);
+
+		/*
+		List<Meter.Id> meterIds = null;
+		meterIds = this.meterRegistry.getMeters().stream()
+		        .map(Meter::getId)
+		        .collect(Collectors.toList());
+
+		Iterator<Id> list = meterIds.iterator();
+		while (list.hasNext()) {
+			Meter.Id id = list.next();
+			if (id.getName().contains("iib:iibIntegrationServerStatus")) {
+				meterRegistry.remove(id);
+			}
+		}
+		
+		
 		Iterator<Entry<String, AtomicInteger>> listListener = this.iibExecutionGroupMap.entrySet().iterator();
 		while (listListener.hasNext()) {
 	        Map.Entry pair = (Map.Entry)listListener.next();
@@ -99,7 +134,9 @@ public class ExecutionGroup extends IIBBase {
 				}
 	        } catch (Exception e) {
 	        }
-		}		
+		}
+		*/
+		
 	}
 	
 }

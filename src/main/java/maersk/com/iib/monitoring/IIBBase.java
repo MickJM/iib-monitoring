@@ -1,5 +1,9 @@
 package maersk.com.iib.monitoring;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /*
  * Inital version: Base object for other IIB monitoring object
  * 
@@ -9,9 +13,14 @@ package maersk.com.iib.monitoring;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.ibm.broker.config.proxy.BrokerProxy;
+
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Meter.Id;
+import io.micrometer.core.instrument.MeterRegistry;
 
 public class IIBBase {
 
@@ -21,6 +30,9 @@ public class IIBBase {
 	// loggin and prefix
 	protected Logger log = LogManager.getLogger(this.getClass());
 	protected static final String IIBPREFIX = "iib:";			
+
+	@Autowired
+	public MeterRegistry meterRegistry;
 
 	// Node name
 	private String nodeName;
@@ -77,5 +89,22 @@ public class IIBBase {
 		static final int NODE_IS_RUNNING = 1;
 		
 	}
-	
+
+	//protected void DeleteMetricEntry(MeterRegistry meterRegistry, String lookup) {
+	protected void DeleteMetricEntry(String lookup) {
+		
+		List<Meter.Id> meterIds = null;
+		meterIds = this.meterRegistry.getMeters().stream()
+		        .map(Meter::getId)
+		        .collect(Collectors.toList());
+		
+		Iterator<Id> list = meterIds.iterator();
+		while (list.hasNext()) {
+			Meter.Id id = list.next();
+			if (id.getName().contains(lookup)) {
+				meterRegistry.remove(id);
+			}
+		}
+		
+	}
 }

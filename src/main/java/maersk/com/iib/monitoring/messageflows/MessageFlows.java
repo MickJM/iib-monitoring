@@ -37,6 +37,9 @@ public class MessageFlows extends IIBBase {
    
     private Map<String,AtomicInteger>sharedLibs = new HashMap<String, AtomicInteger>();
     private Map<String,AtomicInteger>staticLibs = new HashMap<String, AtomicInteger>();
+    
+    protected static final String lookupStatus = IIBPREFIX + "iibMessageFlow";
+
 
     public MessageFlows() {
     	super();
@@ -75,12 +78,23 @@ public class MessageFlows extends IIBBase {
 			        	val = IIBMONConstants.MSGFLOW_IS_RUNNING;
 			        }
 
-			        setMetrics(val, egName, appName, flowName);
-			        			        
+			        //setMetrics(val, egName, appName, flowName);
+			        setMetricGauge(val, egName, appName, flowName);
 				}
 				
 			}
 		}
+	}
+
+	private void setMetricGauge(int val, String egName, String appName, String flowName) throws ConfigManagerProxyPropertyNotInitializedException {
+
+		meterRegistry.gauge(lookupStatus, 
+				Tags.of("iibNodeName", getNodeName(),
+						"integrationServerName", egName,
+						"applicationName", appName,
+						"messageFlow", flowName)
+				,val);
+			
 	}
 
 	private void setMetrics(int val, String egName, String appName, String flowName) {
@@ -117,6 +131,9 @@ public class MessageFlows extends IIBBase {
 	// ... the values will not disappear, since Guages are either 'set' or 'not set'
 	private void setMetricValues(int val) {
 
+		DeleteMetricEntry(lookupStatus);
+		
+		/*
 		Iterator<Entry<String, AtomicInteger>> listListener = this.iibMessageFlows.entrySet().iterator();
 		while (listListener.hasNext()) {
 	        Map.Entry pair = (Map.Entry)listListener.next();
@@ -129,7 +146,7 @@ public class MessageFlows extends IIBBase {
 	        } catch (Exception e) {
 	        }
 		}
-		
+		*/
 		
 	}
 

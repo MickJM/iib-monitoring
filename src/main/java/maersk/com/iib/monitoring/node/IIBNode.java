@@ -30,6 +30,9 @@ public class IIBNode extends IIBBase {
 
     //IIB status
     private Map<String,AtomicInteger>iibStatusMap = new HashMap<String, AtomicInteger>();
+    
+    protected static final String lookupStatus = IIBPREFIX + "iibNodeStatus";
+
 	
 	public IIBNode() {
 		super();
@@ -53,7 +56,7 @@ public class IIBNode extends IIBBase {
 		} catch (ConfigManagerProxyPropertyNotInitializedException e) {
 		} catch (NullPointerException e) {
 		}
-		
+		resetMetric();
 		setNodeMetrics(val);
 	}
 	
@@ -66,6 +69,12 @@ public class IIBNode extends IIBBase {
 	// Set the IIB node metric
 	private void setNodeMetrics(int val) {
 		
+		meterRegistry.gauge(lookupStatus, 
+				Tags.of("iibNodeName", getNodeName())
+				,val);
+
+		
+		/*
 		AtomicInteger i = iibStatusMap.get(getNodeName());
 		if (i == null) {
 			iibStatusMap.put(getNodeName(), 
@@ -78,6 +87,11 @@ public class IIBNode extends IIBBase {
 		} else {
 			i.set(val);
 		}        
-		
+		*/
+	}
+	
+	private void resetMetric() {
+		DeleteMetricEntry(lookupStatus);
+
 	}
 }

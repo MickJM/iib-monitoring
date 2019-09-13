@@ -4,7 +4,7 @@ ibm:
   iib:
     node: TSTIPD01
     connName: localhost(4415)
-    userid1: 
+    user1: 
     password1:
     useSSL1: false 
     event:

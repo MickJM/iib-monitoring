@@ -50,7 +50,7 @@ public class BrokerConnection {
     private int port;
     
 
-    @Value("${ibm.iib.userid:}")
+    @Value("${ibm.iib.user:}")
     private String userid;
     @Value("${ibm.iib.password:}")
     private String password;
