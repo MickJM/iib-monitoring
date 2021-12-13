@@ -8,16 +8,19 @@
 		<version>2.1.6.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>maersk.com.iib.monitoring</groupId>
+	<groupId>app.com.iib.monitoring</groupId>
 	<artifactId>iib-monitoring</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0.4</version>
 	<name>iib-monitoring</name>
 	<description>IIB Monitoring</description>
 
 	<properties>
 		<java.version>1.8</java.version>
-		<java.jetty>C:/Program Files/IBM/IIB/10.0.0.11/common/jetty/lib</java.jetty>
+		<java.iibjetty>C:/Program Files/IBM/IIB/10.0.0.11/common/jetty/lib</java.iibjetty>
 		<java.iibAPI>C:/Program Files/IBM/IIB/10.0.0.11/common/classes</java.iibAPI>
+		<java.acejetty>C:/Program Files/IBM/ACE/11.0.0.05/common/jetty/lib</java.acejetty>
+		<java.aceAPI>C:/Program Files/IBM/ACE/11.0.0.5/common/classes</java.aceAPI>
+		<log4j2.version>2.15.0</log4j2.version>
 	</properties>
 
 	<dependencies>
@@ -42,7 +45,7 @@
 		</dependency>
 
 		<dependency>
-		  <groupId>maersk.com.iib.monitoring</groupId>
+		  <groupId>app.com.iib.monitoring</groupId>
 		  <artifactId>integrationAPI</artifactId>
 		  <version>1.0.0</version>
 		  <scope>system</scope>
@@ -51,13 +54,36 @@
 		  </systemPath>
 		</dependency>
 		
+		 <dependency>
+	        <groupId>javax.xml.bind</groupId>
+	        <artifactId>jaxb-api</artifactId>
+	        <version>2.3.0</version>
+	    </dependency>
+
+		<dependency>
+		    <groupId>com.github.ulisesbocchio</groupId>
+		    <artifactId>jasypt-spring-boot-starter</artifactId>
+		    <version>2.0.0</version>
+		</dependency>
+
+<!-- 
+		<dependency>
+		  <groupId>app.com.iib.monitoring</groupId>
+		  <artifactId>integrationAPI</artifactId>
+		  <version>1.0.0</version>
+		  <scope>system</scope>
+		  <systemPath>
+		    ${java.aceAPI}/IntegrationAPI.jar
+		  </systemPath>
+		</dependency>
+-->		
 		<dependency>
 		  <groupId>jettyCLIENT</groupId>
 		  <artifactId>jettyCLIENT</artifactId>
 		  <version>1.0.0</version>
 		  <scope>system</scope>
 		  <systemPath>
-		    ${java.jetty}/jetty-client.jar
+		    ${java.iibjetty}/jetty-client.jar
 		  </systemPath>
 		</dependency>	
 
@@ -67,7 +93,7 @@
 		  <version>1.0.0</version>
 		  <scope>system</scope>
 		  <systemPath>
-		    ${java.jetty}/jetty-io.jar
+		    ${java.iibjetty}/jetty-io.jar
 		  </systemPath>
 		</dependency>	
 
@@ -77,7 +103,7 @@
 		  <version>1.0.0</version>
 		  <scope>system</scope>
 		  <systemPath>
-		    ${java.jetty}/jetty-util.jar
+		    ${java.iibjetty}/jetty-util.jar
 		  </systemPath>
 		</dependency>	
 	
@@ -87,7 +113,7 @@
 		  <version>1.0.0</version>
 		  <scope>system</scope>
 		  <systemPath>
-		    ${java.jetty}/jetty-http.jar
+		    ${java.iibjetty}/jetty-http.jar
 		  </systemPath>
 		</dependency>	
 
@@ -97,7 +123,7 @@
 		  <version>1.0.0</version>
 		  <scope>system</scope>
 		  <systemPath>
-		    ${java.jetty}/websocket-api.jar
+		    ${java.iibjetty}/websocket-api.jar
 		  </systemPath>
 		</dependency>	
 
@@ -107,7 +133,7 @@
 		  <version>1.0.0</version>
 		  <scope>system</scope>
 		  <systemPath>
-		    ${java.jetty}/websocket-client.jar
+		    ${java.iibjetty}/websocket-client.jar
 		  </systemPath>
 		</dependency>	
 
@@ -117,7 +143,7 @@
 		  <version>1.0.0</version>
 		  <scope>system</scope>
 		  <systemPath>
-		    ${java.jetty}/websocket-common.jar
+		    ${java.iibjetty}/websocket-common.jar
 		  </systemPath>
 		</dependency>
 

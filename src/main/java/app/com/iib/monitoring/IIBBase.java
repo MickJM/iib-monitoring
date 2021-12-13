@@ -1,4 +1,11 @@
-package maersk.com.iib.monitoring;
+package app.com.iib.monitoring;
+
+/*
+ * Copyright 2020
+ *
+ * IIB base
+ * 
+ */
 
 import java.util.Iterator;
 import java.util.List;
@@ -26,7 +33,8 @@ public class IIBBase {
 
     @Value("${application.debug:false}")
     protected boolean _debug;
-
+    public boolean Debug() { return this._debug; }
+    
 	// loggin and prefix
 	protected Logger log = LogManager.getLogger(this.getClass());
 	protected static final String IIBPREFIX = "iib:";			

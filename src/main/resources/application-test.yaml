@@ -26,7 +26,7 @@ info:
   app:
     name: IIB-Metrics
     description: IBM IIB Monitoring Metrics (Dev)
-    version: 1.0.0.0
+    version: 1.0.0.3
     java:
       version: 1.8.0.0
 server:

@@ -1,11 +1,11 @@
-package maersk.com.iib.monitoring;
+package app.com.iib.monitoring;
 
 /*
- * Connect to IIB brokers for Metrics
+ * IIB Monitoring API
+ *
+ * Developed to monitor IIB within SMQ
+ * This API can only monitor IIB v10, due to the way IBM have created their APIs
  * 
- * 30/08/2019 IBM advised that Node was not being set correctly.
- *            Ensured Node Metrics was correctly invoked
- *            
  */
 
 import java.util.regex.Matcher;
@@ -28,11 +28,14 @@ import com.ibm.broker.config.proxy.ConfigManagerProxyLoggedException;
 import com.ibm.broker.config.proxy.ConfigManagerProxyPropertyNotInitializedException;
 import com.ibm.broker.config.proxy.IntegrationNodeConnectionParameters;
 
+import app.com.iib.monitoring.applications.Applications;
+import app.com.iib.monitoring.executiongroup.ExecutionGroup;
+import app.com.iib.monitoring.messageflows.MessageFlows;
+import app.com.iib.monitoring.node.IIBNode;
+
+//import com.ibm.integration.admin.proxy.*;
+
 import io.prometheus.client.CollectorRegistry;
-import maersk.com.iib.monitoring.applications.Applications;
-import maersk.com.iib.monitoring.executiongroup.ExecutionGroup;
-import maersk.com.iib.monitoring.messageflows.MessageFlows;
-import maersk.com.iib.monitoring.node.IIBNode;
 
 @Component
 public class BrokerConnection {
@@ -41,38 +44,63 @@ public class BrokerConnection {
 
     @Value("${application.debug:false}")
     private boolean _debug;
+    public boolean Debug() { return this._debug; }
     @Value("${ibm.iib.node}")
     private String node;
+    public String Nodename() { return this.node; }
     
     @Value("${ibm.iib.connName}")
-    private String connName;   
+    private String connName;
+    public String Connname() { return this.connName; }
+    
     private String hostName;
+    public String Hostname() { return this.hostName; }
+    public void Hostname(String v) { this.hostName = v; }
+
     private int port;
+    public int Port() { return this.port; }
+    public void Port(int v) { this.port = v; }
     
 
     @Value("${ibm.iib.user:}")
     private String userid;
+    public String Username() { return this.userid; }
     @Value("${ibm.iib.password:}")
     private String password;
+    public String Password() { return this.password; }
+    
     @Value("${ibm.iib.useSSL:false}")
     private boolean useSSL;
-
+    public boolean UsingSSL() { return this.useSSL; }
+    
     @Value("${ibm.iib.event.delayInMilliSeconds}")
     private long resetIterations;
 
     private BrokerConnectionParameters bconn = null;
+	public BrokerConnectionParameters BConnection() { return this.bconn; }
+	public void BConnection( BrokerConnectionParameters v ) { this.bconn = v; }
+
     private BrokerProxy bp = null;
+	public BrokerProxy BProxy() { return this.bp; }
+	public void BProxy( BrokerProxy v ) { this.bp = v; }
 	
-    private String brokerName;
+   // private String brokerName;
     
     @Autowired
-    public IIBNode iibNode;
+    private IIBNode iibNode;
+    public IIBNode IIBNode() { return this.iibNode; }
+    
     @Autowired
-    public ExecutionGroup iibExecutionGroups;
+    private ExecutionGroup iibExecutionGroups;
+    public ExecutionGroup Groups() {return this.iibExecutionGroups;}
+
     @Autowired
-    public Applications iibApplications;
+    private Applications iibApplications;
+    public Applications Apps() {return this.iibApplications;}
+
     @Autowired
-    public MessageFlows iibMessageFlows;
+    private MessageFlows iibMessageFlows;
+    public MessageFlows MsgFlows() {return this.iibMessageFlows;}
     
     @Bean
     public IIBNode createNode() {
@@ -101,13 +129,13 @@ public class BrokerConnection {
 	@Scheduled(fixedDelayString="${ibm.iib.event.delayInMilliSeconds}")
 	public void scheduler() {
 		
-		if (this._debug) {log.info("IIB Broker stats");}
+		if (Debug()) {log.info("IIB Broker stats");}
 
 		try {
 
-			if (this.bconn != null) {
-				if (this.bp != null) {
-					if (!this.bp.isRunning()) {
+			if (BConnection() != null) {
+				if (BProxy() != null) {
+					if (!BProxy().isRunning()) {
 						setProperties();
 					}
 					getMetrics();
@@ -115,14 +143,14 @@ public class BrokerConnection {
 				} else {
 					createIIBConnection();
 					setProperties();
-					this.iibNode.setNodeName(this.node);
+					createNode().setNodeName(Nodename());
 					brokerNotRunning();
 					
 				}
 			} else {
 				createIIBConnection();
 				setProperties();
-				this.iibNode.setNodeName(this.node);
+				createNode().setNodeName(Nodename());
 				brokerNotRunning();
 
 			}
@@ -144,18 +172,28 @@ public class BrokerConnection {
 	}
 
 	/*
-	 * Indicate the the broker is not running
+	 * Not running, so remove the metrics
 	 */
 	private void brokerNotRunning() {	
-		this.iibNode.notRunning();
-		this.iibExecutionGroups.notRunning();
-		this.iibApplications.notRunning();
-		this.iibMessageFlows.notRunning();
+		if (IIBNode() != null) {
+			IIBNode().notRunning();			
+		}
 		
+		if (Groups() != null) {
+			Groups().notRunning();
+		}
+		
+		if (Apps() != null) {
+			Apps().notRunning();
+		}
+		
+		if (MsgFlows() != null) {
+			MsgFlows().notRunning();
+		}
 	}
 	
 	// Get the metrics
-	private void getMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
+	public void getMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
 		getNodeMetrics();
 		getExecutionGroups();
 		getApplications();
@@ -166,78 +204,120 @@ public class BrokerConnection {
 	
 	// Get the IIB node metrics and set the name of the broker
 	private void getNodeMetrics() throws ConfigManagerProxyPropertyNotInitializedException {
-		this.brokerName = this.iibNode.getNodeName();
-		this.iibNode.getIIBNodeName();
-		this.iibNode.getNodeMetrics();
+		String brokerName = IIBNode().getNodeName();
+		IIBNode().getIIBNodeName();
+		IIBNode().getNodeMetrics();
 		
-		this.iibExecutionGroups.setNodeName(this.brokerName);
-		this.iibApplications.setNodeName(this.brokerName);
-		this.iibMessageFlows.setNodeName(this.brokerName);
+		Groups().setNodeName(brokerName);
+		Apps().setNodeName(brokerName);
+		MsgFlows().setNodeName(brokerName);
 		
 	}
 	
 	// Get the Execution Group metrics (IntegrationServer)
 	private void getExecutionGroups() throws ConfigManagerProxyPropertyNotInitializedException {
-		this.iibExecutionGroups.getExecutionMetrics();
-		
+		if (Groups() != null) {
+			Groups().getExecutionMetrics();
+		}
 	}
 	
 	// Get the Application metrics
 	private void getApplications() throws ConfigManagerProxyPropertyNotInitializedException {
-		this.iibApplications.getApplicationMetrics();
-		
+		if (Apps() != null) {
+			Apps().getApplicationMetrics();
+		}
 	}
 
 	// Get the MessageFlow metrics
 	private void getMessageFlows() throws ConfigManagerProxyPropertyNotInitializedException {
-		this.iibMessageFlows.getMessageFlowMetrics();
-		
+		if (MsgFlows() != null) {
+			MsgFlows().getMessageFlowMetrics();
+		}
 	}
 	
 	
 	// Create a connection to the IIB node
-	private void createIIBConnection() {
+	public void createIIBConnection() {
 		setConnectionDetails();
 		boolean useCredentials = validateCredentials();
-		
+				
 		/*
 		 * if we are using credential, then connect with them, together if the connection is over SSL 
 		 */
+		if (Debug()) {
+			log.info("Using credentials : {}", useCredentials);
+			log.info("Username          : {}", Username());
+			log.info("Password          : {}", Password() );
+			log.info("SSL               : {}", UsingSSL());
+
+		}
 		if (useCredentials) {
-			this.bconn = new IntegrationNodeConnectionParameters(this.hostName, this.port, this.userid, this.password, this.useSSL);		
+			BConnection( new IntegrationNodeConnectionParameters(Hostname(), Port(), Username(), Password(), UsingSSL()));		
 			
 		} else {
-			this.bconn = new IntegrationNodeConnectionParameters(this.hostName, this.port);		
+			BConnection( new IntegrationNodeConnectionParameters(Hostname(), Port()));		
 		}
 	}
 	
+	/*
+	 * ACE connection
+	 */
+	/*
+	private void createACEConnection() throws IntegrationAdminException {
+		
+		IntegrationServerProxy isp = new IntegrationServerProxy("localhost", 7601, "aceadmin", "Passw0rd", false);
+
+		//IntegrationServerProxy isp = new IntegrationServerProxy()
+		//IntegrationServerProxy isp = new IntegrationServerProxy("IS01", 
+		//		"c:\\Users\\mickm\\OneDrive\\Documents\\Development\\ACE\\workspaces\\IS01");
+
+		//IntegrationServerProxy isp = new IntegrationServerProxy("localhost", 4417);
+		//, "aceadmin", "Password", false);
+
+		//Enumeration<ApplicationProxy> eg = isp.getAllApplications(false);
+		
+		List<ApplicationProxy> egps = isp.getAllApplications(true);
+		
+		for (ApplicationProxy egroup: egps) {
+
+			String egName = egroup.getName().trim();
+			log.info("Name = " + egName);
+			
+		}
+		
+		int i = 0;
+	}
+	*/
 	
 	// create an instance of the broker proxy and set 
 	private void setProperties() {
-		if (this._debug) {
-			log.info("Host: " + this.hostName);
-			log.info("Port: " + this.port);
+		if (Debug()) {
+			log.info("Host: " + Hostname());
+			log.info("Port: " + Port());
 		}
 		
 		try {
-			this.bp = BrokerProxy.getInstance(this.bconn);
-			this.iibNode.setBrokerProxy(this.bp);
-			//this.iibNode.SetNodeProperties();
+			BProxy(BrokerProxy.getInstance(BConnection()));
+			IIBNode().setBrokerProxy(BProxy());			
+			Groups().setBrokerProxy(BProxy());
+			Apps().setBrokerProxy(BProxy());
+			MsgFlows().setBrokerProxy(BProxy());
 			
-			this.iibExecutionGroups.setBrokerProxy(this.bp);
-			this.iibApplications.setBrokerProxy(this.bp);
-			this.iibMessageFlows.setBrokerProxy(this.bp);
-			
-			if (!this.iibNode.getIIBNodeName().equals(this.node)) {
+			if (!IIBNode().getIIBNodeName().equals(Nodename())) {
 				log.error("IIB Node name mismatch"); 
 				System.exit(3);
 			}
 		} catch (ConfigManagerProxyLoggedException e) {
-			this.bp = null;
-			this.iibNode.setNodeName(this.node);
+			if (Debug()) {
+				log.error("Error: " + e.getMessage());
+			}
+			BProxy(null);
+			IIBNode().setNodeName(Nodename());
 			
 		} catch (ConfigManagerProxyPropertyNotInitializedException e) {
-			log.error("Unknown IIB node: " + e.getMessage());
+			if (Debug()) {
+				log.info("Unknown IIB node: " + e.getMessage());
+			}
 			System.exit(4);
 			
 		}
@@ -248,18 +328,18 @@ public class BrokerConnection {
 	private void setConnectionDetails() {
 		
 		// If null or blank ... error
-		if (!(this.node != null && !this.node.isEmpty())) {
+		if (!(Nodename() != null && !Nodename().isEmpty())) {
 			log.error("IIB Node name is missing or is null.");
 			System.exit(1);
 		}
 		
 		// Split the host and port number from the connName ... host(port)
-		if (!this.connName.equals("")) {
+		if (!Connname().equals("")) {
 			Pattern pattern = Pattern.compile("^([^()]*)\\(([^()]*)\\)(.*)$");
-			Matcher matcher = pattern.matcher(this.connName);	
+			Matcher matcher = pattern.matcher(Connname());	
 			if (matcher.matches()) {
-				this.hostName = matcher.group(1).trim();
-				this.port = Integer.parseInt(matcher.group(2).trim());
+				Hostname(matcher.group(1).trim());
+				Port(Integer.parseInt(matcher.group(2).trim()));
 			} else {
 				log.error("While attempting to connect to IIB node, the connName is invalid ");
 				System.exit(2);				
@@ -275,22 +355,17 @@ public class BrokerConnection {
 	// Get the host name and port
 	private boolean validateCredentials() {
 		boolean ret = false;
-	
-		if ((!StringUtils.isEmpty(this.userid)) && (!StringUtils.isEmpty(this.password))) {
+		if ((!StringUtils.isEmpty(Username())) && (!StringUtils.isEmpty(Password()))) {
 			ret = true;
 		}
-		
 		return ret;
-		
 	}
-	
 	
 	@PreDestroy
 	private void disconnect() {
-		if (this._debug) { log.info("Disconnecting from IIB node"); }
-
-		if (this.bp != null) {
-			this.bp.disconnect();
+		if (Debug()) { log.info("Disconnecting from IIB node"); }
+		if (BProxy() != null) {
+			BProxy().disconnect();
 		}
 	}
 
