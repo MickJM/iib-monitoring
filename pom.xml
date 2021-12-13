@@ -20,6 +20,7 @@
 		<java.iibAPI>C:/Program Files/IBM/IIB/10.0.0.11/common/classes</java.iibAPI>
 		<java.acejetty>C:/Program Files/IBM/ACE/11.0.0.05/common/jetty/lib</java.acejetty>
 		<java.aceAPI>C:/Program Files/IBM/ACE/11.0.0.5/common/classes</java.aceAPI>
+		<!-- 13/12/2021 - Added 2.15 due to the Log4j vulnerability CVE-2021–44228 -->	
 		<log4j2.version>2.15.0</log4j2.version>
 	</properties>
 
